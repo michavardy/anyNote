@@ -15,19 +15,20 @@ alias anynote=<path_to_anynote>/anyNote/cli.sh $PWD
 
 # note format
 example
-
-\\ # Keyword
-\\ ```
-\\ code line 1    # comment
-\\ code line 2    # comment
-\\ code line 3    # comment
-\\ ```
-\\ ## sub-Keyword
-\\ ```
-\\ code line 1    # comment
-\\ code line 2    # comment
-\\ code line 3    # comment
-\\ ```
+```
+# Keyword
+``
+code line 1    # comment
+code line 2    # comment
+code line 3    # comment
+``
+## sub-Keyword
+``
+code line 1    # comment
+code line 2    # comment
+code line 3    # comment
+``
+```
 # example use
 $ anynote -r keyword
 >> ```
