@@ -1,9 +1,10 @@
 from pathlib import Path
 import os
-#import argparse
+import argparse
 import time
 from dataclasses import dataclass
 import re
+from autoComplete import auto_complete
 
 @dataclass
 class Node:
@@ -49,13 +50,16 @@ class MarkdownParser:
     def add(self,node):
         self.nodes_list.append(node)
 class CLI:
-    def __init__(self, com_list,options_dict=None):
-        self.commands = com_list
+    def __init__(self, commands,options=None):
+        self.commands = commands
         self.cwd = self.commands[0]
-        self.options = options_dict
+        self.options = options
         self.command_case_match()
-        self.options_case_match()
         self.environ_lookup()
+        self.parse_notes()
+        self.options_case_match()
+    def __repr__(self):
+        return(f"commands={self.commands}, options={self.options}")
     def environ_lookup(self):
         if 'ANY_NOTES_DIRECTORY' in os.environ:
             self.any_notes_directory = Path(os.environ['ANY_NOTES_DIRECTORY'])
@@ -63,6 +67,10 @@ class CLI:
             self.search()
             os.environ['ANY_NOTES_DIRECTORY'] = str(self.any_notes_directory)
         self.notes_text_file = self.any_notes_directory/'notes.md'
+    def parse_notes(self):
+        #self.search()
+        self.text = self.notes_text_file.read_text()
+        self.parse = MarkdownParser(self.text)
     def command_case_match(self):
         match self.commands:
             case [first]:
@@ -76,14 +84,8 @@ class CLI:
     def options_case_match(self):
         if self.options['read']:
             self.read()
-        if self.options['write']:
-            print('write')
-        if self.options['replace']:
-            print('replace')
-        if self.options['edit_vim']:
-            print('edit_vim')
-        if self.options['edit_nano']:
-            print('edit_nano')
+        if self.options['traverse']:
+            self.traverse()
         if all([not self.options[key] for key in self.options.keys()]):
             pass
     def strip_keyword(self,keyword):
@@ -97,13 +99,10 @@ class CLI:
                 min_node = node
         return(min_node)
     def read(self):
-        self.search()
-        self.text = self.notes_text_file.read_text()
-        parse = MarkdownParser(self.text)
-        keyword = self.strip_keyword(self.options['read'])
-        value_list = [node for node in parse.nodes_list if re.search(keyword,node.key,re.I)]
-        if value_list:
-            node = self.min_node_hiarchy(value_list)
+        self.keyword = self.strip_keyword(self.options['read'])
+        self.value_list = [node for node in self.parse.nodes_list if re.search(self.keyword,node.key,re.I)]
+        if self.value_list:
+            node = self.min_node_hiarchy(self.value_list)
             print(node.text)
         else:
             print('no index found')
@@ -124,10 +123,14 @@ class CLI:
                 self.any_notes_directory = self.any_notes_dir[0]
                 self.notes_text_file = self.any_notes_directory/'notes.md'
                 break
-
+    def traverse(self):
+        self.root_nodes = [node for node in self.parse.nodes_list if node.hiarchy==1]
+        print([f'{index}. {node.key}' for index,node in enumerate(self.root_nodes)])
+        auto_complete(self.root_nodes, 'please select note index')
+        
 if __name__ == "__main__":
     commands = ['C:/Users/micha/projects/cobyServer']
-    arg_dict = {'read': "'dockers_contain'", 'write': False, 'replace': False, 'edit_vim': False, 'edit_nano': False}
+    arg_dict = {"read":None, "traverse":True}
     a = time.time()
     cli = CLI(commands,arg_dict)
     parse = MarkdownParser(cli.text)
