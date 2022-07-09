@@ -11,8 +11,45 @@ from autoComplete import auto_complete
 class Node:
     hiarchy:int
     key:str
-    #text:str=None
-    slice:tuple=None
+    text:str=None
+    #slice:tuple=None
+class MarkdownParser2:
+    def __init__(self,text):
+        self.text = text
+        self.find_headers()
+        self.parse_headers()
+    def find_headers(self):
+        # code block slices
+        self.blocks = list(re.finditer("```",self.text))
+        self.slices =  [(self.blocks[i].start(),self.blocks[i+1].end()) for i in range(0,len(self.blocks),2)]
+        # headers
+        self.headers = list(re.finditer("#+.*\n",self.text))
+        self.headers = [head for head in self.headers  \
+            if not any([(head.start() > slc[0] and head.end() < slc[1]) for slc in self.slices])]
+    def parse_headers(self):
+        self.nodes_list = []
+        for header_index in range(len(p.headers)):
+            # remove \n from header
+            raw_text = p.headers[header_index].group()
+            raw_text = re.sub('\n','',raw_text)
+            # count hash tags for hiarchy
+            hiarchy = raw_text.count('#')
+            # sub and strip # to get key
+            key = re.sub('#+','',raw_text)
+            key = key.strip()
+            if header_index < len(p.headers)-1:
+                node = Node(
+                    hiarchy=hiarchy,
+                    key=key,
+                    text=self.text[p.headers[header_index].end():p.headers[header_index+1].start()]
+                )
+            else:
+                node = Node(
+                    hiarchy=hiarchy,
+                    key=key,
+                    text=self.text[p.headers[header_index].end():]
+                )
+            self.nodes_list.append(node)       
 class MarkdownParser:
     def __init__(self,text):
         self.text = text
@@ -72,7 +109,7 @@ class CLI:
     def parse_notes(self):
         #self.search()
         self.text = self.notes_text_file.read_text()
-        self.parse = MarkdownParser(self.text)
+        self.parse = MarkdownParser2(self.text)
     def command_case_match(self):
         match self.commands:
             case [first]:
@@ -137,8 +174,9 @@ class CLI:
         
 if __name__ == "__main__":
     commands = ['C:/Users/micha/projects/cobyServer']
-    arg_dict = {"read":None, "traverse":False}
-    a = time.time()
+    arg_dict = {"read":"'Dockers'", "traverse":False}
+    #a = time.time()
     cli = CLI(commands,arg_dict)
-    parse = MarkdownParser(cli.text)
+    #parse = MarkdownParser(cli.text)
+    p = MarkdownParser2(cli.text)
 
