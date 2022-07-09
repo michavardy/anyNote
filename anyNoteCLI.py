@@ -12,8 +12,7 @@ class Node:
     hiarchy:int
     key:str
     text:str=None
-    #slice:tuple=None
-class MarkdownParser2:
+class MarkdownParser:
     def __init__(self,text):
         self.text = text
         self.find_headers()
@@ -28,66 +27,28 @@ class MarkdownParser2:
             if not any([(head.start() > slc[0] and head.end() < slc[1]) for slc in self.slices])]
     def parse_headers(self):
         self.nodes_list = []
-        for header_index in range(len(p.headers)):
+        for header_index in range(len(self.headers)):
             # remove \n from header
-            raw_text = p.headers[header_index].group()
+            raw_text = self.headers[header_index].group()
             raw_text = re.sub('\n','',raw_text)
             # count hash tags for hiarchy
             hiarchy = raw_text.count('#')
             # sub and strip # to get key
             key = re.sub('#+','',raw_text)
             key = key.strip()
-            if header_index < len(p.headers)-1:
+            if header_index < len(self.headers)-1:
                 node = Node(
                     hiarchy=hiarchy,
                     key=key,
-                    text=self.text[p.headers[header_index].end():p.headers[header_index+1].start()]
+                    text=self.text[self.headers[header_index].end():self.headers[header_index+1].start()]
                 )
             else:
                 node = Node(
                     hiarchy=hiarchy,
                     key=key,
-                    text=self.text[p.headers[header_index].end():]
+                    text=self.text[self.headers[header_index].end():]
                 )
             self.nodes_list.append(node)       
-class MarkdownParser:
-    def __init__(self,text):
-        self.text = text
-        self.keyword_text = ''
-        self.nodes_list =[]
-        self.preProcess()
-        self.parse_keywords()
-        self.parse_text()
-    def preProcess(self):
-        # find slices of ``` ... ```
-        self.blocks = list(re.finditer("```",self.text))
-        self.slices = [(self.blocks[i].start(),self.blocks[i+1].end()) for i in range(0,len(self.blocks),2)]
-        cur = 0
-        for slice in self.slices:
-            # takes everything outside of the code blocks
-            self.keyword_text = self.keyword_text + self.text[cur:slice[0] - 1]
-            cur = slice[1]+1
-    def parse_keywords(self):
-        self.index_list = list(re.finditer('#+',self.keyword_text))
-        for i in range(len(self.index_list)-1):
-            node = Node(
-                hiarchy = len(self.index_list[i].group()),
-                key = self.keyword_text[self.index_list[i].end():self.index_list[i+1].start()]
-            )
-            self.nodes_list.append(node)
-        self.nodes_list.append(Node(
-            hiarchy=len(self.index_list[-1].group()),
-            key = self.keyword_text[self.index_list[-1].end():]))
-    def parse_text(self):
-        new_list = []
-        for index,node in enumerate(self.nodes_list):
-            slice = self.slices[index]
-            node.slice = slice
-            node.text = self.text[slice[0]:slice[1]]
-            new_list.append(node)
-        self.nodes_list = new_list
-    def add(self,node):
-        self.nodes_list.append(node)
 class CLI:
     def __init__(self, commands,options=None):
         self.commands = commands
@@ -109,7 +70,7 @@ class CLI:
     def parse_notes(self):
         #self.search()
         self.text = self.notes_text_file.read_text()
-        self.parse = MarkdownParser2(self.text)
+        self.parse = MarkdownParser(self.text)
     def command_case_match(self):
         match self.commands:
             case [first]:
@@ -177,6 +138,6 @@ if __name__ == "__main__":
     arg_dict = {"read":"'Dockers'", "traverse":False}
     #a = time.time()
     cli = CLI(commands,arg_dict)
-    #parse = MarkdownParser(cli.text)
-    p = MarkdownParser2(cli.text)
+    parse = MarkdownParser(cli.text)
+   
 
