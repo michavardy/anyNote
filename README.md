@@ -4,7 +4,11 @@ a light weight cli tool note system that can be read notes in the terminal on th
 # to Install
 ```
 git clone https://github.com/michavardy/anyNote
-nano ~/.bashrc
+mkdir .venv
+python -m venv ./.venv
+. ./.venv/Scripts/activate
+python -m pip install requirments.txt
+# append the following to ~/.bashrc
 alias anynote=<path_to_anynote>/anyNote/cli.sh $PWD
 ```
 # to Use
