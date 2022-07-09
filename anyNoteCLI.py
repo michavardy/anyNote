@@ -1,3 +1,4 @@
+from cgitb import text
 from pathlib import Path
 import os
 import argparse
@@ -124,9 +125,14 @@ class CLI:
                 self.notes_text_file = self.any_notes_directory/'notes.md'
                 break
     def traverse(self):
-        self.root_nodes = [node for node in self.parse.nodes_list if node.hiarchy==1]
-        print([f'{index}. {node.key}' for index,node in enumerate(self.root_nodes)])
-        auto_complete(self.root_nodes, 'please select note index')
+        self.traverse_selected = ''
+        self.root_nodes = [node for node in self.parse.nodes_list]
+        self.root_nodes_keys = [node.key.strip() for node in self.root_nodes]
+        print([node.key.strip() for node in self.root_nodes if node.hiarchy==1])
+        print('please select note index, press esc to exit')
+        self.traverse_selected = auto_complete(self.root_nodes_keys)
+        self.options['read']=self.traverse_selected
+        self.read()
         
 if __name__ == "__main__":
     commands = ['C:/Users/micha/projects/cobyServer']
