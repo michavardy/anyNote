@@ -1,6 +1,6 @@
 # anyNote
 a light weight cli tool note system that can be read notes in the terminal on the fly
-
+![anynote](https://github.com/michavardy/anyNote/blob/master/anynote.gif)
 # to Install
 ```
 git clone https://github.com/michavardy/anyNote
