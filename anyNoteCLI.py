@@ -22,11 +22,12 @@ class MarkdownParser:
         self.parse_keywords()
         self.parse_text()
     def preProcess(self):
-        # remove text blocks
-        blocks = list(re.finditer("```",self.text))
-        self.slices = [(blocks[i].start(),blocks[i+1].end()) for i in range(0,len(blocks),2)]
+        # find slices of ``` ... ```
+        self.blocks = list(re.finditer("```",self.text))
+        self.slices = [(self.blocks[i].start(),self.blocks[i+1].end()) for i in range(0,len(self.blocks),2)]
         cur = 0
         for slice in self.slices:
+            # takes everything outside of the code blocks
             self.keyword_text = self.keyword_text + self.text[cur:slice[0] - 1]
             cur = slice[1]+1
     def parse_keywords(self):
@@ -136,7 +137,7 @@ class CLI:
         
 if __name__ == "__main__":
     commands = ['C:/Users/micha/projects/cobyServer']
-    arg_dict = {"read":None, "traverse":True}
+    arg_dict = {"read":None, "traverse":False}
     a = time.time()
     cli = CLI(commands,arg_dict)
     parse = MarkdownParser(cli.text)
