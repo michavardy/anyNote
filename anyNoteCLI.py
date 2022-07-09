@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import re
 from autoComplete import auto_complete
 
-@dataclass
+@dataclass 
 class Node:
     hiarchy:int
     key:str
